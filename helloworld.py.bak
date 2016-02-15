@@ -1,0 +1,58 @@
+# -*- coding:utf-8 -*-
+import os,sys
+import tornado.httpserver
+import tornado.ioloop
+import tornado.options
+import tornado.web
+
+reload(sys)
+sys.setdefaultencoding('utf-8')  # @UndefinedVariable
+
+
+class RootHandler(tornado.web.RequestHandler):
+    def do_request(self):
+        print "Get a request!"
+        print self.request.arguments
+        print self.request.files
+        print self.request.path
+        print self.request.headers
+        body = self.request.arguments
+        if (body.has_key("picname")):
+            print body["picname"]
+            self.write(body["picname"][0])
+        else:
+            self.write("no picname param!")
+    def post(self):
+        self.do_request()        
+    def get(self):
+        self.do_request()
+		
+class ShowIndex(tornado.web.RequestHandler):
+    def Runfun(self):
+        print "show index!"
+        self.write("index.html")
+        #self.write("Hello, world")
+    def post(self):
+        self.Runfun()
+    def get(self):
+        self.Runfun()
+#定义的tronado的应用类继承tornado.web.Application，重载初始化函数
+class Application(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+            #web服务器首页
+            (r"/", RootHandler),
+			(r"/index",ShowIndex)
+
+        ]
+        settings = dict(
+            template_path=os.path.join(os.path.dirname(__file__), "template"),
+            static_path=os.path.join(os.path.dirname(__file__), "static"),
+            autoreload = True,
+        )
+        tornado.web.Application.__init__(self, handlers, **settings)
+
+if __name__ == "__main__":
+    tornado.httpserver.HTTPServer(Application()).listen(9090)
+    print "Begin to listen!"
+    tornado.ioloop.IOLoop.current().start()
